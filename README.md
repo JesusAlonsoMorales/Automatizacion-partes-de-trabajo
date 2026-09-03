@@ -30,6 +30,22 @@ sale como coste de nómina e importe a facturar, ya clasificado por tipo de hora
 - Doble clave `Key_nomina` / `Key_variable` para que reclasificar la facturación
   no altere el histórico de nómina.
 
+**Stack:** `Microsoft Forms` · `SharePoint` · `Power Automate` · `Excel` ·
+`Power Query (M)` · `Power Pivot` · `DAX`
+
+---
+
+## Qué demuestra este proyecto
+
+| Competencia | Dónde se ve |
+|---|---|
+| **Gobierno del dato en origen** | Formulario de campos cerrados + lista de SharePoint: el dato entra normalizado, sin limpieza posterior. |
+| **Automatización de flujos** | Power Automate enriquece cada parte con datos de ficha del trabajador sin intervención manual. |
+| **Transformación con Power Query (M)** | Reparto de la jornada en tramos horarios, acumulación de horas y clasificación del tipo de hora — lógica no trivial, resuelta en el lenguaje M ([`power-query/FACT_PARTES.m`](power-query/FACT_PARTES.m)). |
+| **Modelado dimensional** | Esquema en estrella `FACT_PARTES` + 4 dimensiones, con relaciones y medidas DAX en Power Pivot. |
+| **Criterio de negocio** | La separación `Key_nomina` / `Key_variable` protege el histórico de coste de personal frente a reclasificaciones de facturación: una decisión de diseño, no de herramienta. |
+| **Reproducibilidad** | El libro se ha desacoplado de su origen corporativo para que cualquiera pueda abrirlo y actualizarlo sin credenciales. |
+
 ---
 
 ## Flujo de datos
@@ -221,25 +237,24 @@ ni un euro del histórico de coste de personal.
 
 ### `Resumen Nómina` — coste de personal (julio 2026)
 
-| Trabajador | Coste horas var. | KM | Pernocta | Dieta | Despl. | Salario base | **Total nómina** |
+| Trabajador | Coste horas var. | KM | Pernocta | Dieta | Desplazamiento | Salario base | **Total nómina** |
 |---|--:|--:|--:|--:|--:|--:|--:|
-| Álvaro Cabrera Ruiz | 126,00 | 0 | 0 | 0 | 0 | 1.745,50 | **1.871,50** |
-| Marcos Ruiz Delgado | 14,00 | 0 | 0 | 0 | 0 | 1.745,50 | **1.759,50** |
-| Marta Domínguez Ríos | 381,00 | 0 | 0 | 0 | 0 | 1.510,25 | **1.891,25** |
+| Álvaro Cabrera Ruiz | 126,00 | 0,00 | 0,00 | 0,00 | 0,00 | 1.745,50 | **1.871,50** |
+| Marcos Ruiz Delgado | 14,00 | 0,00 | 0,00 | 0,00 | 0,00 | 1.745,50 | **1.759,50** |
+| Marta Domínguez Ríos | 381,00 | 0,00 | 0,00 | 0,00 | 0,00 | 1.510,25 | **1.891,25** |
 | Sergio Navarro Peña | 107,00 | 43,50 | 220,00 | 176,00 | 22,00 | 1.510,25 | **2.078,75** |
+| **Total julio** | **628,00** | **43,50** | **220,00** | **176,00** | **22,00** | **6.511,50** | **7.601,00** |
 
-*Total general del periodo (jul + ago + oct): **10.853,50 €**.*
+*Total de los tres meses del periodo (jul + ago + oct): **10.853,50 €**.*
 
-### `Resumen Facturación` — importe a facturar por sección
+### `Resumen Facturación` — importe a facturar por cliente (periodo completo)
 
-| Sección | Nº horas | Importe |
+| Cliente | Nº horas | Importe |
 |---|--:|--:|
-| Cafetería | 23 | 521,94 |
-| Construcción | 17,5 | 452,69 |
-| Decoración | 18,5 | 447,97 |
-| Informática | 12 | 359,42 |
-| Mantenimiento | 14 | 344,68 |
-| … | … | … |
+| Construred Huelva | 63 | 1.599,94 |
+| Construred Lepe | 52 | 1.196,53 |
+| Construred Dos Hermanas | 28 | 677,73 |
+| Construred Córdoba | 8 | 173,84 |
 | **Total general** | **150** | **3.648,04** |
 
 ---
@@ -302,9 +317,10 @@ anonimizadas, haz `Datos → Actualizar todo`.
 
 ## Cómo abrirlo
 
-1. Descarga `data/Resumen_partes_de_trabajo_anonimizado.xlsx` y ábrelo en
-   **Excel de escritorio** (el modelo de datos y las tablas dinámicas OLAP no
-   se renderizan en Excel Online ni en Google Sheets).
+1. Descarga
+   [`data/Resumen_partes_de_trabajo_anonimizado.xlsx`](data/Resumen_partes_de_trabajo_anonimizado.xlsx)
+   y ábrelo en **Excel de escritorio** (el modelo de datos y las tablas
+   dinámicas OLAP no se renderizan en Excel Online ni en Google Sheets).
 2. `Datos → Actualizar todo` para regenerar el modelo desde `ORIGEN_PARTES` y
    las tablas dimensión (todo local, sin SharePoint).
 3. Explora `Resumen Nómina` y `Resumen Facturación`.
@@ -316,7 +332,7 @@ anonimizadas, haz `Datos → Actualizar todo`.
 | `data/Resumen_partes_de_trabajo_anonimizado.xlsx` | Libro completo: Power Query + Power Pivot + tablas dinámicas OLAP |
 | `data/ORIGEN_PARTES.csv` | Snapshot anonimizado que alimenta las consultas (sustituye a SharePoint) |
 | `power-query/FACT_PARTES.m` | Consulta M de la tabla de hechos, adaptada a origen local |
-| `docs/` | Panel web (`index.html` + `data.json`) publicado con GitHub Pages |
+| `docs/` | Panel web (`index.html` + `data.json` + `og-cover.png`) publicado con GitHub Pages |
 | `.gitignore` | Ignora archivos de bloqueo/temporales de Office |
 
 ### Hojas del libro
@@ -328,24 +344,6 @@ anonimizadas, haz `Datos → Actualizar todo`.
 | `DIM_SALARIO_BASE`, `DIM_COSTES_EXTRAS`, `DIM_COSTE_HORAS`, `DIM_TARIFAS` | Tablas dimensión |
 | `Resumen Nómina` | Tabla dinámica OLAP + KPIs de coste de personal |
 | `Resumen Facturación` | Tabla dinámica OLAP + KPIs de ingreso por cliente |
-
----
-
-## Qué demuestra este proyecto
-
-| Competencia | Dónde se ve |
-|---|---|
-| **Gobierno del dato en origen** | Formulario de campos cerrados + lista de SharePoint: el dato entra normalizado, sin limpieza posterior. |
-| **Automatización de flujos** | Power Automate enriquece cada parte con datos de ficha del trabajador sin intervención manual. |
-| **Transformación con Power Query (M)** | Reparto de la jornada en tramos horarios, acumulación de horas y clasificación del tipo de hora — lógica no trivial, resuelta en el lenguaje M ([`power-query/FACT_PARTES.m`](power-query/FACT_PARTES.m)). |
-| **Modelado dimensional** | Esquema en estrella `FACT_PARTES` + 4 dimensiones, con relaciones y medidas DAX en Power Pivot. |
-| **Criterio de negocio** | La separación `Key_nomina` / `Key_variable` protege el histórico de coste de personal frente a reclasificaciones de facturación: una decisión de diseño, no de herramienta. |
-| **Reproducibilidad** | El libro se ha desacoplado de su origen corporativo para que cualquiera pueda abrirlo y actualizarlo sin credenciales. |
-
-## Stack
-
-`Microsoft Forms` · `SharePoint` (lista, origen de datos) · `Power Automate`
-(enriquecimiento) · `Excel` · `Power Query (M)` · `Power Pivot` · `DAX`
 
 ---
 
