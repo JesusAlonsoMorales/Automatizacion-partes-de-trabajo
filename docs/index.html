@@ -4,6 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Partes de trabajo · Panel de resultados</title>
+<meta name="description" content="Panel de resultados del modelo de partes de trabajo: coste de nómina e importe a facturar por cliente, sección y tipo de hora. Power Query + Power Pivot + DAX.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Partes de trabajo · Panel de resultados">
+<meta property="og:description" content="De un parte de horas a coste de nómina e importe a facturar, clasificado por tipo de hora. Modelo Excel: Power Query + Power Pivot + DAX.">
+<meta property="og:url" content="https://jesusalonsomorales.github.io/Automatizacion-partes-de-trabajo/">
+<meta property="og:image" content="https://jesusalonsomorales.github.io/Automatizacion-partes-de-trabajo/og-cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Partes de trabajo · Panel de resultados">
+<meta name="twitter:description" content="De un parte de horas a coste de nómina e importe a facturar. Power Query + Power Pivot + DAX.">
+<meta name="twitter:image" content="https://jesusalonsomorales.github.io/Automatizacion-partes-de-trabajo/og-cover.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -36,7 +46,8 @@
   .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:var(--shadow)}
   .card.full{grid-column:1/-1}
   .chart-box{position:relative;height:280px}
-  .chart-box.tall{height:360px}
+  .chart-box.tall{height:460px}
+  .sub{color:var(--muted);font-size:.8rem;margin:-8px 0 12px}
   table{width:100%;border-collapse:collapse;font-size:.9rem}
   th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
   th:first-child,td:first-child{text-align:left}
@@ -65,6 +76,7 @@
     <div class="card full"><h2>Importe a facturar por sección</h2><div class="chart-box tall"><canvas id="cSeccion"></canvas></div></div>
     <div class="card full">
       <h2>Coste de nómina por trabajador</h2>
+      <p class="sub">Acumulado del periodo (julio – octubre 2026).</p>
       <div style="overflow-x:auto"><table id="tNomina"></table></div>
     </div>
   </div>
@@ -120,8 +132,8 @@ fetch('data.json').then(r=>r.json()).then(d=>{
 
   new Chart(cSeccion,{type:'bar',data:{labels:d.seccion.map(x=>x[0]),
     datasets:[{data:d.seccion.map(x=>x[2]),backgroundColor:A[0],borderRadius:5}]},
-    options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>eur2(c.raw)+'  ·  '+d.seccion[c.dataIndex][1]+' h'}}},
-      scales:{y:{ticks:{callback:v=>eur(v)}}}}});
+    options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>eur2(c.raw)+'  ·  '+d.seccion[c.dataIndex][1]+' h'}}},
+      scales:{x:{ticks:{callback:v=>eur(v)}}}}});
 
   const cols=['Trabajador','Coste horas var.','KM','Pernocta','Dieta','Desplaz.','Salario base','Total nómina'];
   const f=(v,i)=> i===0 ? v : eur2(v);
@@ -134,3 +146,4 @@ fetch('data.json').then(r=>r.json()).then(d=>{
 </script>
 </body>
 </html>
+
