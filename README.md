@@ -201,7 +201,7 @@ ni un euro del histórico de coste de personal.
 | CATEGORIA 4 | 0,00 | 4,80 | 14,40 | 19,20 |
 
 > La hora ordinaria ya está incluida en el salario base, por eso su sobrecoste
-> variable es 0. Las demas suman sobre el salario base.
+> variable es 0. Las demás suman sobre el salario base.
 
 ### `DIM_TARIFAS` — precio de venta por hora (ingreso)
 
@@ -214,25 +214,33 @@ ni un euro del histórico de coste de personal.
 
 ---
 
-## Ejemplo de salida — `Resumen Nómina` (2026-07)
+## Resultados
+
+> Cifras sobre los datos anonimizados del libro. La versión navegable está en el
+> **[panel web](https://jesusalonsomorales.github.io/Automatizacion-partes-de-trabajo/)**.
+
+### `Resumen Nómina` — coste de personal (julio 2026)
 
 | Trabajador | Coste horas var. | KM | Pernocta | Dieta | Despl. | Salario base | **Total nómina** |
 |---|--:|--:|--:|--:|--:|--:|--:|
 | Álvaro Cabrera Ruiz | 126,00 | 0 | 0 | 0 | 0 | 1.745,50 | **1.871,50** |
 | Marcos Ruiz Delgado | 14,00 | 0 | 0 | 0 | 0 | 1.745,50 | **1.759,50** |
-| Marta Domínguez Ríos | 361,00 | 0 | 0 | 0 | 0 | 1.510,25 | **1.871,25** |
-| Sergio Navarro Peña | 97,00 | 43,50 | 220,00 | 176,00 | 22,00 | 1.510,25 | **2.068,75** |
+| Marta Domínguez Ríos | 381,00 | 0 | 0 | 0 | 0 | 1.510,25 | **1.891,25** |
+| Sergio Navarro Peña | 107,00 | 43,50 | 220,00 | 176,00 | 22,00 | 1.510,25 | **2.078,75** |
 
-## Ejemplo de salida — `Resumen Facturación` (por sección, total periodo)
+*Total general del periodo (jul + ago + oct): **10.853,50 €**.*
 
-| Sección | Nº horas a facturar | Importe a facturar |
+### `Resumen Facturación` — importe a facturar por sección
+
+| Sección | Nº horas | Importe |
 |---|--:|--:|
 | Cafetería | 23 | 521,94 |
+| Construcción | 17,5 | 452,69 |
+| Decoración | 18,5 | 447,97 |
+| Informática | 12 | 359,42 |
 | Mantenimiento | 14 | 344,68 |
-| Informática | 12 | 338,58 |
-| Cofre | 11 | 270,50 |
 | … | … | … |
-| **Total general** | **150** | **3.580,72** |
+| **Total general** | **150** | **3.648,04** |
 
 ---
 
@@ -241,7 +249,8 @@ ni un euro del histórico de coste de personal.
 En producción, la consulta `FACT_PARTES` arranca con:
 
 ```m
-Origen = SharePoint.Tables("https://<tenant>.sharepoint.com/sites/partes", [ApiVersion = 15]),
+// El dominio corporativo se ha omitido a propósito en esta copia pública
+Origen = SharePoint.Tables("https://DOMINIO-OMITIDO.sharepoint.com/sites/partes", [ApiVersion = 15]),
 ```
 
 Eso hace que **quien abra el libro sin acceso a ese SharePoint reciba un error
@@ -271,6 +280,34 @@ copia pública el acoplamiento se ha roto así:
 Resultado: cualquiera puede descargar el `.xlsx`, pulsar `Datos → Actualizar
 todo` y regenerar el modelo completo **sin credenciales ni acceso al
 SharePoint de la empresa**.
+
+### Reproducir el desacoplamiento en tu copia
+
+Si partes del libro original conectado a SharePoint:
+
+1. Importa [`data/ORIGEN_PARTES.csv`](data/ORIGEN_PARTES.csv) con
+   `Datos → Desde texto/CSV` (así `Hora entrada` / `Hora salida` se detectan
+   como fecha-hora) y cárgalo como tabla; ponle de nombre **`ORIGEN_PARTES`**
+   (pestaña *Diseño de tabla → Nombre de la tabla*). Si lo pegas a mano,
+   formatea esas dos columnas como fecha-hora antes de seguir.
+   > La tabla de Excel no admite dos encabezados que solo difieran en
+   > mayúsculas, así que el CSV **no** incluye la columna `ID` original de
+   > SharePoint (idéntica a `Id`); la consulta la reconstruye como `ID.1`.
+2. `Datos → Consultas y conexiones` → `FACT_PARTES` → `Editar` → `Editor
+   avanzado`. Reemplaza **todo** el cuerpo por el de
+   [`power-query/FACT_PARTES.m`](power-query/FACT_PARTES.m), pegando solo
+   desde `let` hasta `#"Columnas reordenadas1"` (sin el `shared FACT_PARTES =`
+   ni el `;` final).
+3. `Cerrar y cargar` → `Datos → Actualizar todo`.
+4. Guarda. Comprueba que ya no queda ninguna URL de SharePoint:
+   descomprime el `.xlsx` (es un ZIP) y busca `sharepoint.com` en
+   `customXml/` — no debe aparecer en `item*.xml` (la parte `DataMashup`).
+
+> ⚠️ La ruta real de SharePoint **también viaja dentro de la parte
+> `DataMashup`** del `.xlsx`, no solo en el panel de conexiones. Revisar solo
+> `Datos → Consultas y conexiones` no basta: hay que reescribir el paso
+> `Origen` de cada consulta y volver a guardar para que desaparezca del
+> binario.
 
 ## Anonimización
 
