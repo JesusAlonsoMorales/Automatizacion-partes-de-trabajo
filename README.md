@@ -279,34 +279,6 @@ Resultado: cualquiera puede descargar el `.xlsx`, pulsar `Datos → Actualizar
 todo` y regenerar el modelo completo **sin credenciales ni acceso al
 SharePoint de la empresa**.
 
-### Reproducir el desacoplamiento en tu copia
-
-Si partes del libro original conectado a SharePoint:
-
-1. Importa [`data/ORIGEN_PARTES.csv`](data/ORIGEN_PARTES.csv) con
-   `Datos → Desde texto/CSV` (así `Hora entrada` / `Hora salida` se detectan
-   como fecha-hora) y cárgalo como tabla; ponle de nombre **`ORIGEN_PARTES`**
-   (pestaña *Diseño de tabla → Nombre de la tabla*). Si lo pegas a mano,
-   formatea esas dos columnas como fecha-hora antes de seguir.
-   > La tabla de Excel no admite dos encabezados que solo difieran en
-   > mayúsculas, así que el CSV **no** incluye la columna `ID` original de
-   > SharePoint (idéntica a `Id`); la consulta la reconstruye como `ID.1`.
-2. `Datos → Consultas y conexiones` → `FACT_PARTES` → `Editar` → `Editor
-   avanzado`. Reemplaza **todo** el cuerpo por el de
-   [`power-query/FACT_PARTES.m`](power-query/FACT_PARTES.m), pegando solo
-   desde `let` hasta `#"Columnas reordenadas1"` (sin el `shared FACT_PARTES =`
-   ni el `;` final).
-3. `Cerrar y cargar` → `Datos → Actualizar todo`.
-4. Guarda. Comprueba que ya no queda ninguna URL de SharePoint:
-   descomprime el `.xlsx` (es un ZIP) y busca `sharepoint.com` en
-   `customXml/` — no debe aparecer en `item*.xml` (la parte `DataMashup`).
-
-> ⚠️ La ruta real de SharePoint **también viaja dentro de la parte
-> `DataMashup`** del `.xlsx`, no solo en el panel de conexiones. Revisar solo
-> `Datos → Consultas y conexiones` no basta: hay que reescribir el paso
-> `Origen` de cada consulta y volver a guardar para que desaparezca del
-> binario.
-
 ## Anonimización
 
 Esta copia del libro está anonimizada:
