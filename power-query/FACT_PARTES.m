@@ -1,9 +1,10 @@
 // FACT_PARTES  (versión de reparto público: origen local, no SharePoint)
 shared FACT_PARTES = let
     // ---- ORIGEN LOCAL (snapshot anonimizado) --------------------------------
-    // Sustituye a:  SharePoint.Tables("https://<tenant>.sharepoint.com/sites/partes")
-    // Lee la tabla ORIGEN_PARTES incrustada en el propio libro, de modo que
-    // cualquiera puede abrir y actualizar el archivo sin acceso al SharePoint.
+    // En producción este paso era SharePoint.Tables(...) contra el sitio de la
+    // empresa (dominio omitido a propósito). Aquí lee la tabla ORIGEN_PARTES
+    // incrustada en el propio libro, para poder abrirlo y actualizarlo sin
+    // acceso a ese SharePoint.
     Origen = Excel.CurrentWorkbook(){[Name="ORIGEN_PARTES"]}[Content],
     #"Tipo cambiado" = Table.TransformColumnTypes(Origen,{
         {"Id", Int64.Type},
