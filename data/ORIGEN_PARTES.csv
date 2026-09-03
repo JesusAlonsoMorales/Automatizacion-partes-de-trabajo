@@ -1,0 +1,28 @@
+﻿Id,Title,Tipo de parte,Cliente,Hora entrada,Hora salida,Horasdedesplazamiento(iday,KM(sihayvehículoprop,Nºpernoctaciones,Descripcióntrabajos,Nºpresupuesto,OData_¿Haspernoctado?,Categoría,Author.FirstName,Author.LastName,Author.GUID,Categoría_Trabajador,Sección
+32,Parte de horas,Finalización de trabajos,Construred Lepe,2026-07-01 07:00:00,2026-07-01 15:00:00,0,0,0,Montaje suelo tienda,2026/23,,CATEGORIA 1,Marta,Domínguez Ríos,b38f0e0d-11d6-42dd-86e4-afb283aa5b04,CATEGORIA 4,Tienda
+41,Parte de horas,Parte de horas,Construred Huelva,2026-07-10 15:00:00,2026-07-11 03:00:00,0,0,0,"Recolocar cable tierra suelto cuarto serrin
+",,,CATEGORIA 2,Sergio,Navarro Peña,987c4990-b33b-43a9-b56e-f35172b5cfa4,CATEGORIA 2,Informática
+42,Parte de horas,Parte de horas,Construred Huelva,2026-07-14 07:00:00,2026-07-14 16:00:00,2,150,4,"Sustituir cerradura y manillas puerta almacén devoluciones 
+",,,CATEGORIA 2,Sergio,Navarro Peña,987c4990-b33b-43a9-b56e-f35172b5cfa4,CATEGORIA 2,Herramientas
+43,Parte de horas,Parte de horas,Construred Lepe,2026-07-15 06:00:00,2026-07-15 10:00:00,0,0,0,"Conectar sai al plc
+",,,CATEGORIA 2,Sergio,Navarro Peña,987c4990-b33b-43a9-b56e-f35172b5cfa4,CATEGORIA 2,Cafetería
+44,Parte de horas,Parte de horas,Construred Lepe,2026-07-15 10:00:00,2026-07-15 12:00:00,0,0,0,"Montaje linea alimentación para ascensor
+",,,CATEGORIA 2,Sergio,Navarro Peña,987c4990-b33b-43a9-b56e-f35172b5cfa4,CATEGORIA 2,Ascensores
+45,Parte de horas,Parte de horas,Construred Lepe,2026-07-15 12:00:00,2026-07-15 15:00:00,0,0,0,"Alimentación rack para ventiladores 
+",,,CATEGORIA 2,Sergio,Navarro Peña,987c4990-b33b-43a9-b56e-f35172b5cfa4,CATEGORIA 2,Cofre
+46,Parte de horas,Parte de horas,Construred Lepe,2026-07-16 06:00:00,2026-07-16 14:00:00,0,0,0,Meter cable techo sae y meter cable plc ,,,CATEGORIA 2,Sergio,Navarro Peña,987c4990-b33b-43a9-b56e-f35172b5cfa4,CATEGORIA 2,Electricidad
+47,Parte de horas,Parte de horas,Construred Dos Hermanas,2026-07-15 07:00:00,2026-07-16 00:30:00,0,0,0,limpieza arquetas,,,CATEGORIA 1,Marta,Domínguez Ríos,b38f0e0d-11d6-42dd-86e4-afb283aa5b04,CATEGORIA 1,Construcción
+48,Parte de horas,Parte de horas,Construred Lepe,2026-07-15 06:00:00,2026-07-16 00:30:00,0,0,0,Exposicion sas ventanas,,,CATEGORIA 1,Marta,Domínguez Ríos,b38f0e0d-11d6-42dd-86e4-afb283aa5b04,CATEGORIA 1,Decoración
+49,Parte de horas,Parte de horas,Construred Lepe,2026-08-05 06:00:00,2026-08-05 10:00:00,0,0,0,,,,CATEGORIA 2,Sergio,Navarro Peña,987c4990-b33b-43a9-b56e-f35172b5cfa4,CATEGORIA 2,Cajas
+50,Parte de horas,Parte de horas,Construred Lepe,2026-08-05 10:00:00,2026-08-05 14:00:00,0,0,0,,,,CATEGORIA 2,Sergio,Navarro Peña,987c4990-b33b-43a9-b56e-f35172b5cfa4,CATEGORIA 2,Logística
+51,Parte de horas,Parte de horas,Construred Huelva,2026-07-16 06:00:00,2026-07-16 15:00:00,0,0,0,Poda de pino,68,,CATEGORIA 4,Marcos,Ruiz Delgado,67591f23-0615-4eac-8170-7a11b7662cc8,CATEGORIA 4,Parking
+53,Parte de horas,Parte de horas,Construred Huelva,2026-07-17 06:00:00,2026-07-17 15:00:00,0,0,0,Estuvimos barriendo la entrada del cliente,,,CATEGORIA 3,Álvaro,Cabrera Ruiz,d9a6f262-4f7f-4751-ab9b-8fbb9058d4a6,CATEGORIA 3,Cafetería
+54,Parte de horas,Parte de horas,Construred Huelva,2026-07-16 06:00:00,2026-07-16 13:00:00,0,0,0,Reparación de protecciones de racks,,,CATEGORIA 3,Álvaro,Cabrera Ruiz,d9a6f262-4f7f-4751-ab9b-8fbb9058d4a6,CATEGORIA 3,Mantenimiento
+55,Parte de horas,Parte de horas,Construred Huelva,2026-07-16 13:00:00,2026-07-16 14:00:00,0,0,0,Verificar y coger modelos de extractores aseos,,,CATEGORIA 3,Álvaro,Cabrera Ruiz,d9a6f262-4f7f-4751-ab9b-8fbb9058d4a6,CATEGORIA 3,Mantenimiento
+56,Parte de horas,Parte de horas,Construred Huelva,2026-07-17 06:00:00,2026-07-17 14:00:00,0,0,0,Alicatado ,,,CATEGORIA 4,Marcos,Ruiz Delgado,67591f23-0615-4eac-8170-7a11b7662cc8,CATEGORIA 4,Cofre
+57,Parte de horas,Parte de horas,Construred Huelva,2026-07-17 06:00:00,2026-07-17 08:00:00,0,0,0,Montaje de espejos y conexión eléctrica ,,,CATEGORIA 3,Álvaro,Cabrera Ruiz,d9a6f262-4f7f-4751-ab9b-8fbb9058d4a6,CATEGORIA 3,Sanitario
+58,Parte de horas,Parte de horas,Construred Huelva,2026-07-17 08:00:00,2026-07-17 09:00:00,0,0,0,Reparación de barandillas rampa acceso clientes por rotura ,,,CATEGORIA 3,Álvaro,Cabrera Ruiz,d9a6f262-4f7f-4751-ab9b-8fbb9058d4a6,CATEGORIA 3,Mantenimiento
+59,Parte de horas,Parte de horas,Construred Huelva,2026-07-17 09:00:00,2026-07-17 10:00:00,0,0,0,Bajar con transpaleta la  tucán averiada,,,CATEGORIA 3,Álvaro,Cabrera Ruiz,d9a6f262-4f7f-4751-ab9b-8fbb9058d4a6,CATEGORIA 3,Mantenimiento
+60,Parte de horas,Parte de horas,Construred Huelva,2026-07-17 10:00:00,2026-07-17 14:00:00,0,0,0,Delimitar zonas de trabajo exterior para reparación de panel Sandwich ,,,CATEGORIA 3,Álvaro,Cabrera Ruiz,d9a6f262-4f7f-4751-ab9b-8fbb9058d4a6,CATEGORIA 3,Mantenimiento
+61,Parte de horas,Parte de horas,Construred Dos Hermanas,2026-10-01 06:00:00,2026-10-01 16:00:00,2,300,1,Desbroce del perimetro,,,CATEGORIA 2,Sergio,Navarro Peña,987c4990-b33b-43a9-b56e-f35172b5cfa4,CATEGORIA 2,Cafetería
+63,Parte de horas,Parte de horas,Construred Córdoba,2026-07-22 06:00:00,2026-07-22 14:00:00,0,0,0,,,,CATEGORIA 2,Sergio,Navarro Peña,987c4990-b33b-43a9-b56e-f35172b5cfa4,CATEGORIA 2,Cajas
