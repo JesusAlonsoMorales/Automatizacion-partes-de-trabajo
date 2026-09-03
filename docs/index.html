@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Partes de trabajo · Panel de resultados</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#fff; --ink:#1a1d23; --muted:#5b6472; --line:#e6e8ec;
+    --accent:#2f6feb; --accent2:#0e9f6e; --accent3:#f0a020; --accent4:#e05252;
+    --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.1);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{--bg:#0f1115;--card:#171a21;--ink:#e8eaed;--muted:#9aa4b2;--line:#252a33;
+      --shadow:0 1px 2px rgba(0,0,0,.3);}
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5}
+  .wrap{max-width:1040px;margin:0 auto;padding:32px 20px 64px}
+  header p{color:var(--muted);margin:.35rem 0 0}
+  h1{font-size:1.6rem;margin:0;font-weight:700;letter-spacing:-.01em}
+  h2{font-size:1.05rem;margin:0 0 14px;font-weight:600}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .back{display:inline-block;margin-bottom:22px;font-size:.9rem;color:var(--muted)}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:24px 0 8px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow)}
+  .kpi .v{font-size:1.5rem;font-weight:700;letter-spacing:-.02em}
+  .kpi .l{color:var(--muted);font-size:.82rem;margin-top:2px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:720px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:var(--shadow)}
+  .card.full{grid-column:1/-1}
+  .chart-box{position:relative;height:280px}
+  .chart-box.tall{height:360px}
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  thead th{color:var(--muted);font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.03em}
+  tbody tr:last-child td{border-bottom:none}
+  tfoot td{font-weight:700;border-top:2px solid var(--line)}
+  .note{color:var(--muted);font-size:.82rem;margin-top:26px}
+  .tag{display:inline-block;background:color-mix(in srgb,var(--accent) 12%,transparent);
+    color:var(--accent);border-radius:999px;padding:2px 10px;font-size:.78rem;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="https://github.com/JesusAlonsoMorales/Automatizacion-partes-de-trabajo">← Ver el proyecto y el código en GitHub</a>
+  <header>
+    <span class="tag">Datos anonimizados</span>
+    <h1>Partes de trabajo — panel de resultados</h1>
+    <p>Salida del modelo Excel (Power Query + Power Pivot + DAX): de un parte de horas a coste de nómina e importe a facturar, clasificado por tipo de hora.</p>
+  </header>
+
+  <section class="kpis" id="kpis"></section>
+
+  <div class="grid">
+    <div class="card"><h2>Importe a facturar por cliente</h2><div class="chart-box"><canvas id="cCliente"></canvas></div></div>
+    <div class="card"><h2>Horas e importe por tipo de hora</h2><div class="chart-box"><canvas id="cTipo"></canvas></div></div>
+    <div class="card full"><h2>Importe a facturar por sección</h2><div class="chart-box tall"><canvas id="cSeccion"></canvas></div></div>
+    <div class="card full">
+      <h2>Coste de nómina por trabajador</h2>
+      <div style="overflow-x:auto"><table id="tNomina"></table></div>
+    </div>
+  </div>
+
+  <p class="note">
+    Cifras recalculadas sobre datos ficticios (nombres, cliente, salarios y tarifas alterados manteniendo las proporciones).
+    El importe a facturar sale de <code>FACT_PARTES</code> × <code>DIM_TARIFAS</code> por la clave <code>Categoría|TipoHora</code>;
+    la nómina, de <code>DIM_COSTE_HORAS</code>, <code>DIM_COSTES_EXTRAS</code> y <code>DIM_SALARIO_BASE</code>.
+    Metodología completa en el <a href="https://github.com/JesusAlonsoMorales/Automatizacion-partes-de-trabajo#readme">README</a>.
+  </p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+const eur = n => n.toLocaleString('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:0});
+const eur2 = n => n.toLocaleString('es-ES',{style:'currency',currency:'EUR',minimumFractionDigits:2});
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+fetch('data.json').then(r=>r.json()).then(d=>{
+  const A=[css('--accent'),css('--accent2'),css('--accent3'),css('--accent4')];
+  const ink=css('--ink'), muted=css('--muted'), line=css('--line');
+  Chart.defaults.color = muted; Chart.defaults.font.family='Inter, sans-serif';
+  Chart.defaults.borderColor = line;
+  Chart.defaults.maintainAspectRatio = false;
+  Chart.defaults.responsive = true;
+
+  document.getElementById('kpis').innerHTML = [
+    ['Total a facturar', eur2(d.kpi.facturacion)],
+    ['Total nómina', eur2(d.kpi.nomina)],
+    ['Horas facturadas', d.kpi.horas.toLocaleString('es-ES')],
+    ['Partes', d.kpi.partes],
+    ['Trabajadores', d.kpi.trabajadores],
+    ['Clientes', d.kpi.clientes],
+  ].map(([l,v])=>`<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+
+  new Chart(cCliente,{type:'bar',data:{labels:d.cliente.map(x=>x[0]),
+    datasets:[{data:d.cliente.map(x=>x[1]),backgroundColor:A[0],borderRadius:6}]},
+    options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>eur2(c.raw)}}},
+      scales:{x:{ticks:{callback:v=>eur(v)}}}}});
+
+  new Chart(cTipo,{type:'bar',data:{labels:d.tipo.map(x=>x[0]),
+    datasets:[
+      {label:'Horas',data:d.tipo.map(x=>x[1]),backgroundColor:A[1],borderRadius:6,yAxisID:'y'},
+      {label:'Importe',data:d.tipo.map(x=>x[2]),backgroundColor:A[2],borderRadius:6,yAxisID:'y1'}]},
+    options:{plugins:{tooltip:{callbacks:{label:c=>c.dataset.label==='Importe'?eur2(c.raw):c.raw+' h'}}},
+      scales:{y:{position:'left',title:{display:true,text:'horas'}},
+              y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>eur(v)},title:{display:true,text:'€'}}}}});
+
+  new Chart(cSeccion,{type:'bar',data:{labels:d.seccion.map(x=>x[0]),
+    datasets:[{data:d.seccion.map(x=>x[2]),backgroundColor:A[0],borderRadius:5}]},
+    options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>eur2(c.raw)+'  ·  '+d.seccion[c.dataIndex][1]+' h'}}},
+      scales:{y:{ticks:{callback:v=>eur(v)}}}}});
+
+  const cols=['Trabajador','Coste horas var.','KM','Pernocta','Dieta','Desplaz.','Salario base','Total nómina'];
+  const f=(v,i)=> i===0 ? v : eur2(v);
+  const tot=d.nomina.reduce((a,r)=>a.map((x,i)=> i===0?'Total':x+r[i]),[0,0,0,0,0,0,0,0]);
+  document.getElementById('tNomina').innerHTML =
+    '<thead><tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'</tr></thead><tbody>'+
+    d.nomina.map(r=>'<tr>'+r.map((v,i)=>`<td>${f(v,i)}</td>`).join('')+'</tr>').join('')+
+    '</tbody><tfoot><tr>'+tot.map((v,i)=>`<td>${f(v,i)}</td>`).join('')+'</tr></tfoot>';
+});
+</script>
+</body>
+</html>

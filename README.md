@@ -12,47 +12,37 @@ tiene que ser rápida, guiada y difícil de rellenar mal. Toda la complejidad
 (clasificación de horas, costes, tarifas, modelo de datos) queda escondida
 detrás y se resuelve automáticamente.
 
+### ▶ [Panel de resultados interactivo](https://jesusalonsomorales.github.io/Automatizacion-partes-de-trabajo/)
+
+KPIs, facturación por cliente / sección / tipo de hora y coste de nómina por
+trabajador, sobre los datos anonimizados del libro. *(GitHub Pages · sin Excel)*
+
+**En una línea:** un parte de horas mal estructurado entra por un formulario y
+sale como coste de nómina e importe a facturar, ya clasificado por tipo de hora
+(ordinaria / nocturna / extra) y separando el coste interno del precio de venta.
+
+**Qué se resuelve automáticamente:**
+
+- Normalización del dato en origen (formulario + lista de SharePoint).
+- Enriquecimiento con la categoría del trabajador (Power Automate).
+- Reparto de la jornada en tramos y clasificación del tipo de hora (Power Query / M).
+- Cálculo de coste e ingreso con un modelo dimensional en estrella (Power Pivot / DAX).
+- Doble clave `Key_nomina` / `Key_variable` para que reclasificar la facturación
+  no altere el histórico de nómina.
+
 ---
 
 ## Flujo de datos
 
-```
-┌─────────────────────┐
-│  Formulario         │  El trabajador registra un parte por
-│  (cliente, horas,   │  cliente y jornada. Campos cerrados →
-│   KM, dieta, ...)   │  datos normalizados desde el origen.
-└─────────┬───────────┘
-          ▼
-┌─────────────────────┐
-│  Lista de SharePoint│  Cada respuesta se vuelca automáticamente
-│  (datos crudos      │  como un elemento de lista. Tipos de columna
-│   normalizados)     │  y opciones controladas evitan errores.
-└─────────┬───────────┘
-          ▼
-┌─────────────────────┐
-│  Power Automate     │  Al crearse el elemento, busca al trabajador
-│  (enriquecimiento)  │  en su perfil y añade su CATEGORÍA (y demás
-│                     │  datos de ficha) al registro del parte.
-└─────────┬───────────┘
-          ▼
-┌─────────────────────┐
-│  Excel + Power Query │  El libro está conectado a la lista de
-│  (FACT_PARTES)      │  SharePoint y se actualiza solo. Power Query
-│                     │  reparte cada parte en tramos horarios y
-│                     │  clasifica el TIPO DE HORA.
-└─────────┬───────────┘
-          ▼
-┌─────────────────────┐
-│  Power Pivot / DAX  │  Modelo en estrella: FACT_PARTES contra las
-│  (medidas + rel.)   │  tablas dimensión de salario, costes, coste
-│                     │  de hora y tarifas.
-└─────────┬───────────┘
-          ▼
-┌─────────────────────┐
-│  Resumen Nómina     │  Tablas dinámicas OLAP + segmentadores.
-│  Resumen Facturación│  Total nómina / trabajador y total a
-│                     │  facturar / cliente.
-└─────────────────────┘
+```mermaid
+flowchart TD
+    A["Formulario<br/>cliente, horas, KM, dieta… · campos cerrados"]
+    B["Lista de SharePoint<br/>1 respuesta = 1 elemento · tipos y opciones controladas"]
+    C["Power Automate<br/>añade la categoría del trabajador desde su ficha"]
+    D["Excel · Power Query (M)<br/>reparte la jornada en tramos y clasifica el tipo de hora → FACT_PARTES"]
+    E["Power Pivot · DAX<br/>modelo en estrella + medidas · coste de nómina / importe a facturar"]
+    F["Resumen Nómina / Facturación<br/>tablas dinámicas OLAP + segmentadores"]
+    A --> B --> C --> D --> E --> F
 ```
 
 ### 1. Recolección: formulario
@@ -150,6 +140,9 @@ Dos hojas con tablas dinámicas OLAP y segmentadores/línea de tiempo:
   base.
 - **`Resumen Facturación`** — importe a facturar por cliente, trabajador,
   parte, clase de hora y sección.
+
+Esos mismos resultados, en versión web:
+**[jesusalonsomorales.github.io/Automatizacion-partes-de-trabajo](https://jesusalonsomorales.github.io/Automatizacion-partes-de-trabajo/)**
 
 ---
 
@@ -279,6 +272,34 @@ Resultado: cualquiera puede descargar el `.xlsx`, pulsar `Datos → Actualizar
 todo` y regenerar el modelo completo **sin credenciales ni acceso al
 SharePoint de la empresa**.
 
+### Reproducir el desacoplamiento en tu copia
+
+Si partes del libro original conectado a SharePoint:
+
+1. Importa [`data/ORIGEN_PARTES.csv`](data/ORIGEN_PARTES.csv) con
+   `Datos → Desde texto/CSV` (así `Hora entrada` / `Hora salida` se detectan
+   como fecha-hora) y cárgalo como tabla; ponle de nombre **`ORIGEN_PARTES`**
+   (pestaña *Diseño de tabla → Nombre de la tabla*). Si lo pegas a mano,
+   formatea esas dos columnas como fecha-hora antes de seguir.
+   > La tabla de Excel no admite dos encabezados que solo difieran en
+   > mayúsculas, así que el CSV **no** incluye la columna `ID` original de
+   > SharePoint (idéntica a `Id`); la consulta la reconstruye como `ID.1`.
+2. `Datos → Consultas y conexiones` → `FACT_PARTES` → `Editar` → `Editor
+   avanzado`. Reemplaza **todo** el cuerpo por el de
+   [`power-query/FACT_PARTES.m`](power-query/FACT_PARTES.m), pegando solo
+   desde `let` hasta `#"Columnas reordenadas1"` (sin el `shared FACT_PARTES =`
+   ni el `;` final).
+3. `Cerrar y cargar` → `Datos → Actualizar todo`.
+4. Guarda. Comprueba que ya no queda ninguna URL de SharePoint:
+   descomprime el `.xlsx` (es un ZIP) y busca `sharepoint.com` en
+   `customXml/` — no debe aparecer en `item*.xml` (la parte `DataMashup`).
+
+> ⚠️ La ruta real de SharePoint **también viaja dentro de la parte
+> `DataMashup`** del `.xlsx`, no solo en el panel de conexiones. Revisar solo
+> `Datos → Consultas y conexiones` no basta: hay que reescribir el paso
+> `Origen` de cada consulta y volver a guardar para que desaparezca del
+> binario.
+
 ## Anonimización
 
 Esta copia del libro está anonimizada:
@@ -314,6 +335,7 @@ anonimizadas, haz `Datos → Actualizar todo`.
 | `data/Resumen_partes_de_trabajo_anonimizado.xlsx` | Libro completo: Power Query + Power Pivot + tablas dinámicas OLAP |
 | `data/ORIGEN_PARTES.csv` | Snapshot anonimizado que alimenta las consultas (sustituye a SharePoint) |
 | `power-query/FACT_PARTES.m` | Consulta M de la tabla de hechos, adaptada a origen local |
+| `docs/` | Panel web (`index.html` + `data.json`) publicado con GitHub Pages |
 | `.gitignore` | Ignora archivos de bloqueo/temporales de Office |
 
 ### Hojas del libro
@@ -327,6 +349,17 @@ anonimizadas, haz `Datos → Actualizar todo`.
 | `Resumen Facturación` | Tabla dinámica OLAP + KPIs de ingreso por cliente |
 
 ---
+
+## Qué demuestra este proyecto
+
+| Competencia | Dónde se ve |
+|---|---|
+| **Gobierno del dato en origen** | Formulario de campos cerrados + lista de SharePoint: el dato entra normalizado, sin limpieza posterior. |
+| **Automatización de flujos** | Power Automate enriquece cada parte con datos de ficha del trabajador sin intervención manual. |
+| **Transformación con Power Query (M)** | Reparto de la jornada en tramos horarios, acumulación de horas y clasificación del tipo de hora — lógica no trivial, resuelta en el lenguaje M ([`power-query/FACT_PARTES.m`](power-query/FACT_PARTES.m)). |
+| **Modelado dimensional** | Esquema en estrella `FACT_PARTES` + 4 dimensiones, con relaciones y medidas DAX en Power Pivot. |
+| **Criterio de negocio** | La separación `Key_nomina` / `Key_variable` protege el histórico de coste de personal frente a reclasificaciones de facturación: una decisión de diseño, no de herramienta. |
+| **Reproducibilidad** | El libro se ha desacoplado de su origen corporativo para que cualquiera pueda abrirlo y actualizarlo sin credenciales. |
 
 ## Stack
 
