@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Partes de trabajo · Panel de resultados</title>
-<meta name="description" content="Panel de resultados del modelo de partes de trabajo: coste de nómina e importe a facturar por cliente, sección y tipo de hora. Power Query + Power Pivot + DAX.">
+<meta name="description" content="Panel interactivo del modelo de partes de trabajo: filtra por cliente, trabajador, sección, tipo de hora y mes; coste de nómina e importe a facturar. Power Query + Power Pivot + DAX.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Partes de trabajo · Panel de resultados">
-<meta property="og:description" content="De un parte de horas a coste de nómina e importe a facturar, clasificado por tipo de hora. Modelo Excel: Power Query + Power Pivot + DAX.">
+<meta property="og:description" content="De un parte de horas a coste de nómina e importe a facturar, filtrable por cliente, trabajador, sección, tipo de hora y mes. Modelo Excel: Power Query + Power Pivot + DAX.">
 <meta property="og:url" content="https://jesusalonsomorales.github.io/Automatizacion-partes-de-trabajo/">
 <meta property="og:image" content="https://jesusalonsomorales.github.io/Automatizacion-partes-de-trabajo/og-cover.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Partes de trabajo · Panel de resultados">
-<meta name="twitter:description" content="De un parte de horas a coste de nómina e importe a facturar. Power Query + Power Pivot + DAX.">
+<meta name="twitter:description" content="De un parte de horas a coste de nómina e importe a facturar, filtrable por cliente, trabajador, sección, tipo de hora y mes.">
 <meta name="twitter:image" content="https://jesusalonsomorales.github.io/Automatizacion-partes-de-trabajo/og-cover.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,11 +21,11 @@
   :root{
     --bg:#f6f7f9; --card:#fff; --ink:#1a1d23; --muted:#5b6472; --line:#e6e8ec;
     --accent:#2f6feb; --accent2:#0e9f6e; --accent3:#f0a020; --accent4:#e05252;
-    --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.1);
+    --chip:#eef1f5; --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.1);
   }
   @media (prefers-color-scheme:dark){
     :root{--bg:#0f1115;--card:#171a21;--ink:#e8eaed;--muted:#9aa4b2;--line:#252a33;
-      --shadow:0 1px 2px rgba(0,0,0,.3);}
+      --chip:#1f232c; --shadow:0 1px 2px rgba(0,0,0,.3);}
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);
@@ -37,12 +37,33 @@
   a{color:var(--accent);text-decoration:none}
   a:hover{text-decoration:underline}
   .back{display:inline-block;margin-bottom:22px;font-size:.9rem;color:var(--muted)}
-  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:24px 0 8px}
+
+  .filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:22px 0 4px;
+    background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
+  .filters .f{display:flex;flex-direction:column;gap:4px}
+  .filters label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;font-weight:600}
+  .filters select{font:inherit;font-size:.88rem;color:var(--ink);background:var(--chip);
+    border:1px solid var(--line);border-radius:8px;padding:7px 10px;min-width:150px;cursor:pointer}
+  .filters select:focus{outline:2px solid var(--accent);outline-offset:1px}
+  #resetBtn{margin-left:auto;font:inherit;font-size:.85rem;font-weight:600;color:var(--accent);
+    background:none;border:1px solid var(--line);border-radius:8px;padding:8px 14px;cursor:pointer;align-self:flex-end}
+  #resetBtn:hover{background:var(--chip)}
+  #resetBtn:disabled{opacity:.4;cursor:default}
+  #activeChips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0;min-height:0}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:var(--chip);border:1px solid var(--line);
+    border-radius:999px;padding:3px 6px 3px 12px;font-size:.78rem}
+  .chip button{border:none;background:none;color:var(--muted);cursor:pointer;font-size:.95rem;line-height:1;
+    border-radius:50%;width:18px;height:18px}
+  .chip button:hover{background:var(--line);color:var(--ink)}
+  #emptyState{display:none;text-align:center;padding:40px 20px;color:var(--muted)}
+
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:18px 0 8px}
   .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow)}
-  .kpi .v{font-size:1.4rem;font-weight:700;letter-spacing:-.02em;white-space:nowrap}
+  .kpi .v{font-size:1.4rem;font-weight:700;letter-spacing:-.02em;white-space:nowrap;transition:opacity .15s}
   .kpi .l{color:var(--muted);font-size:.82rem;margin-top:2px}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
-  @media (max-width:720px){.grid{grid-template-columns:1fr}}
+  @media (max-width:720px){.grid{grid-template-columns:1fr} .filters{flex-direction:column;align-items:stretch}
+    .filters select{width:100%} #resetBtn{margin-left:0;align-self:stretch}}
   .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:var(--shadow)}
   .card.full{grid-column:1/-1}
   .chart-box{position:relative;height:280px}
@@ -57,6 +78,7 @@
   .note{color:var(--muted);font-size:.82rem;margin-top:26px}
   .tag{display:inline-block;background:color-mix(in srgb,var(--accent) 12%,transparent);
     color:var(--accent);border-radius:999px;padding:2px 10px;font-size:.78rem;font-weight:600}
+  .nodata{color:var(--muted);font-size:.85rem;padding:20px 0;text-align:center}
 </style>
 </head>
 <body>
@@ -65,18 +87,30 @@
   <header>
     <span class="tag">Datos anonimizados</span>
     <h1>Partes de trabajo — panel de resultados</h1>
-    <p>Salida del modelo Excel (Power Query + Power Pivot + DAX): de un parte de horas a coste de nómina e importe a facturar, clasificado por tipo de hora.</p>
+    <p>Salida del modelo Excel (Power Query + Power Pivot + DAX): de un parte de horas a coste de nómina e importe a facturar, clasificado por tipo de hora. Filtra para explorar.</p>
   </header>
+
+  <div class="filters">
+    <div class="f"><label for="fCliente">Cliente</label><select id="fCliente"></select></div>
+    <div class="f"><label for="fTrabajador">Trabajador</label><select id="fTrabajador"></select></div>
+    <div class="f"><label for="fSeccion">Sección</label><select id="fSeccion"></select></div>
+    <div class="f"><label for="fTipo">Tipo de hora</label><select id="fTipo"></select></div>
+    <div class="f"><label for="fMes">Mes</label><select id="fMes"></select></div>
+    <button id="resetBtn" type="button">Restablecer filtros</button>
+  </div>
+  <div id="activeChips"></div>
 
   <section class="kpis" id="kpis"></section>
 
-  <div class="grid">
+  <div id="emptyState">Ningún parte coincide con estos filtros. Prueba a quitar alguno.</div>
+
+  <div class="grid" id="mainGrid">
     <div class="card"><h2>Importe a facturar por cliente</h2><div class="chart-box"><canvas id="cCliente"></canvas></div></div>
     <div class="card"><h2>Horas e importe por tipo de hora</h2><div class="chart-box"><canvas id="cTipo"></canvas></div></div>
     <div class="card full"><h2>Importe a facturar por sección</h2><div class="chart-box tall"><canvas id="cSeccion"></canvas></div></div>
     <div class="card full">
       <h2>Coste de nómina por trabajador</h2>
-      <p class="sub">Acumulado del periodo (julio – octubre 2026).</p>
+      <p class="sub">Acumulado del periodo (julio – octubre 2026). Se filtra por trabajador y mes.</p>
       <div style="overflow-x:auto"><table id="tNomina"></table></div>
     </div>
   </div>
@@ -91,7 +125,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
-// Formato es-ES a mano (3.648,04 €) para no depender de quirks de Intl/ICU
+// ---- Formato es-ES a mano (3.648,04 €) para no depender de quirks de Intl/ICU ----
 const miles = s => s.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 const eur  = n => miles(Math.round(n).toString()) + ' €';
 const eur2 = n => {
@@ -99,51 +133,154 @@ const eur2 = n => {
   return (n < 0 ? '-' : '') + miles(e) + ',' + d + ' €';
 };
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const MES_LABEL = m => m ? new Date(m+'-02').toLocaleDateString('es-ES',{month:'long',year:'numeric'}) : m;
 
 fetch('data.json').then(r=>r.json()).then(d=>{
   const A=[css('--accent'),css('--accent2'),css('--accent3'),css('--accent4')];
-  const ink=css('--ink'), muted=css('--muted'), line=css('--line');
+  const muted = css('--muted'), line = css('--line');
   Chart.defaults.color = muted; Chart.defaults.font.family='Inter, sans-serif';
   Chart.defaults.borderColor = line;
   Chart.defaults.maintainAspectRatio = false;
   Chart.defaults.responsive = true;
 
-  document.getElementById('kpis').innerHTML = [
-    ['Total a facturar', eur2(d.kpi.facturacion)],
-    ['Total nómina', eur2(d.kpi.nomina)],
-    ['Horas facturadas', d.kpi.horas.toLocaleString('es-ES')],
-    ['Partes', d.kpi.partes],
-    ['Trabajadores', d.kpi.trabajadores],
-    ['Clientes', d.kpi.clientes],
-  ].map(([l,v])=>`<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+  const partes = d.partes;   // filas por tramo: cliente, trabajador, seccion, tipo, mes, horas, importe
+  const nomina = d.nomina;   // filas por trabajador/mes: costeHoras, km, pernocta, dieta, desplazamiento, salarioBase, total
 
-  new Chart(cCliente,{type:'bar',data:{labels:d.cliente.map(x=>x[0]),
-    datasets:[{data:d.cliente.map(x=>x[1]),backgroundColor:A[0],borderRadius:6}]},
-    options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>eur2(c.raw)}}},
-      scales:{x:{ticks:{callback:v=>eur(v)}}}}});
+  const FIELDS = [
+    ['fCliente',     'cliente',     'Todos los clientes'],
+    ['fTrabajador',  'trabajador',  'Todos los trabajadores'],
+    ['fSeccion',     'seccion',     'Todas las secciones'],
+    ['fTipo',        'tipo',        'Todos los tipos de hora'],
+    ['fMes',         'mes',         'Todos los meses'],
+  ];
+  const state = {cliente:'', trabajador:'', seccion:'', tipo:'', mes:''};
 
-  new Chart(cTipo,{type:'bar',data:{labels:d.tipo.map(x=>x[0]),
-    datasets:[
-      {label:'Horas',data:d.tipo.map(x=>x[1]),backgroundColor:A[1],borderRadius:6,yAxisID:'y'},
-      {label:'Importe',data:d.tipo.map(x=>x[2]),backgroundColor:A[2],borderRadius:6,yAxisID:'y1'}]},
-    options:{plugins:{tooltip:{callbacks:{label:c=>c.dataset.label==='Importe'?eur2(c.raw):c.raw+' h'}}},
-      scales:{y:{position:'left',title:{display:true,text:'horas'}},
-              y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>eur(v)},title:{display:true,text:'€'}}}}});
+  // Rellena cada <select> con sus valores únicos (orden alfabético, meses en orden cronológico)
+  FIELDS.forEach(([id, key, allLabel])=>{
+    const values = [...new Set(partes.map(p=>p[key]))].sort((a,b)=>
+      key==='mes' ? a.localeCompare(b) : a.localeCompare(b,'es'));
+    const sel = document.getElementById(id);
+    sel.innerHTML = `<option value="">${allLabel}</option>` +
+      values.map(v=>`<option value="${v}">${key==='mes'?MES_LABEL(v):v}</option>`).join('');
+    sel.addEventListener('change', ()=>{ state[key]=sel.value; render(); });
+  });
 
-  new Chart(cSeccion,{type:'bar',data:{labels:d.seccion.map(x=>x[0]),
-    datasets:[{data:d.seccion.map(x=>x[2]),backgroundColor:A[0],borderRadius:5}]},
-    options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>eur2(c.raw)+'  ·  '+d.seccion[c.dataIndex][1]+' h'}}},
-      scales:{x:{ticks:{callback:v=>eur(v)}}}}});
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    Object.keys(state).forEach(k=>state[k]='');
+    FIELDS.forEach(([id])=>document.getElementById(id).value='');
+    render();
+  });
 
-  const cols=['Trabajador','Coste horas var.','KM','Pernocta','Dieta','Desplaz.','Salario base','Total nómina'];
-  const f=(v,i)=> i===0 ? v : eur2(v);
-  const tot=d.nomina.reduce((a,r)=>a.map((x,i)=> i===0?'Total':x+r[i]),[0,0,0,0,0,0,0,0]);
-  document.getElementById('tNomina').innerHTML =
-    '<thead><tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'</tr></thead><tbody>'+
-    d.nomina.map(r=>'<tr>'+r.map((v,i)=>`<td>${f(v,i)}</td>`).join('')+'</tr>').join('')+
-    '</tbody><tfoot><tr>'+tot.map((v,i)=>`<td>${f(v,i)}</td>`).join('')+'</tr></tfoot>';
+  function filteredPartes(){
+    return partes.filter(p =>
+      (!state.cliente || p.cliente===state.cliente) &&
+      (!state.trabajador || p.trabajador===state.trabajador) &&
+      (!state.seccion || p.seccion===state.seccion) &&
+      (!state.tipo || p.tipo===state.tipo) &&
+      (!state.mes || p.mes===state.mes));
+  }
+  // La nómina no depende de cliente/sección/tipo (es una vista de coste de personal, no de facturación)
+  function filteredNomina(){
+    return nomina.filter(n =>
+      (!state.trabajador || n.trabajador===state.trabajador) &&
+      (!state.mes || n.mes===state.mes));
+  }
+
+  function sumBy(rows, key, val){
+    const m = new Map();
+    for (const r of rows){
+      const k = r[key];
+      const cur = m.get(k) || [0,0];
+      cur[0]+=r.horas; cur[1]+=r[val];
+      m.set(k, cur);
+    }
+    return [...m.entries()].sort((a,b)=>b[1][1]-a[1][1]);
+  }
+
+  const FIELD_LABELS = {cliente:'Cliente', trabajador:'Trabajador', seccion:'Sección', tipo:'Tipo de hora', mes:'Mes'};
+
+  function renderChips(){
+    const active = Object.entries(state).filter(([,v])=>v);
+    document.getElementById('resetBtn').disabled = active.length===0;
+    document.getElementById('activeChips').innerHTML = active.map(([k,v])=>
+      `<span class="chip">${FIELD_LABELS[k]}: <strong>${k==='mes'?MES_LABEL(v):v}</strong>
+        <button data-k="${k}" aria-label="Quitar filtro ${FIELD_LABELS[k]}">×</button></span>`).join('');
+    document.querySelectorAll('#activeChips button').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const k = btn.dataset.k;
+        state[k]=''; document.getElementById('f'+k[0].toUpperCase()+k.slice(1)).value='';
+        render();
+      });
+    });
+  }
+
+  let chCliente, chTipo, chSeccion;
+  function upsertChart(existing, canvasId, config){
+    if (existing){ existing.data = config.data; existing.options = config.options; existing.update(); return existing; }
+    return new Chart(document.getElementById(canvasId), config);
+  }
+
+  function render(){
+    renderChips();
+    const fp = filteredPartes();
+    const fn = filteredNomina();
+
+    document.getElementById('emptyState').style.display = fp.length ? 'none' : 'block';
+    document.getElementById('mainGrid').style.display = fp.length ? 'grid' : 'none';
+    if (!fp.length) return;
+
+    const horas = fp.reduce((s,p)=>s+p.horas,0);
+    const importe = fp.reduce((s,p)=>s+p.importe,0);
+    const nominaTotal = fn.reduce((s,n)=>s+n.total,0);
+
+    document.getElementById('kpis').innerHTML = [
+      ['Total a facturar', eur2(importe)],
+      ['Total nómina', eur2(nominaTotal)],
+      ['Horas facturadas', horas.toLocaleString('es-ES')],
+      ['Partes', new Set(fp.map(p=>p.id)).size],
+      ['Trabajadores', new Set(fp.map(p=>p.trabajador)).size],
+      ['Clientes', new Set(fp.map(p=>p.cliente)).size],
+    ].map(([l,v])=>`<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+
+    const porCliente = sumBy(fp,'cliente','importe');
+    chCliente = upsertChart(chCliente,'cCliente',{type:'bar',data:{labels:porCliente.map(x=>x[0]),
+      datasets:[{data:porCliente.map(x=>x[1][1]),backgroundColor:A[0],borderRadius:6}]},
+      options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>eur2(c.raw)}}},
+        scales:{x:{ticks:{callback:v=>eur(v)}}}}});
+
+    const ORDEN_TIPO=['ORDINARIA','NOCTURNA','EXTRA ORDINARIA','EXTRA ESPECIAL'];
+    const porTipo = sumBy(fp,'tipo','importe').sort((a,b)=>ORDEN_TIPO.indexOf(a[0])-ORDEN_TIPO.indexOf(b[0]));
+    chTipo = upsertChart(chTipo,'cTipo',{type:'bar',data:{labels:porTipo.map(x=>x[0]),
+      datasets:[
+        {label:'Horas',data:porTipo.map(x=>x[1][0]),backgroundColor:A[1],borderRadius:6,yAxisID:'y'},
+        {label:'Importe',data:porTipo.map(x=>x[1][1]),backgroundColor:A[2],borderRadius:6,yAxisID:'y1'}]},
+      options:{plugins:{tooltip:{callbacks:{label:c=>c.dataset.label==='Importe'?eur2(c.raw):c.raw+' h'}}},
+        scales:{y:{position:'left',title:{display:true,text:'horas'},beginAtZero:true},
+                y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>eur(v)},title:{display:true,text:'€'},beginAtZero:true}}}});
+
+    const porSeccion = sumBy(fp,'seccion','importe');
+    chSeccion = upsertChart(chSeccion,'cSeccion',{type:'bar',data:{labels:porSeccion.map(x=>x[0]),
+      datasets:[{data:porSeccion.map(x=>x[1][1]),backgroundColor:A[0],borderRadius:5}]},
+      options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>eur2(c.raw)+'  ·  '+porSeccion[c.dataIndex][1][0]+' h'}}},
+        scales:{x:{ticks:{callback:v=>eur(v)}}}}});
+
+    const cols=['Trabajador','Coste horas var.','KM','Pernocta','Dieta','Desplaz.','Salario base','Total nómina'];
+    const keys=['trabajador','costeHoras','km','pernocta','dieta','desplazamiento','salarioBase','total'];
+    const fmt=(v,i)=> i===0 ? v : eur2(v);
+    const tNomina = document.getElementById('tNomina');
+    if (!fn.length){
+      tNomina.innerHTML = `<tbody><tr><td class="nodata">Ningún registro de nómina coincide con el trabajador/mes elegido.</td></tr></tbody>`;
+    } else {
+      const tot = keys.map((k,i)=> i===0 ? 'Total' : fn.reduce((s,r)=>s+r[k],0));
+      tNomina.innerHTML =
+        '<thead><tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'</tr></thead><tbody>'+
+        fn.map(r=>'<tr>'+keys.map((k,i)=>`<td>${fmt(r[k],i)}</td>`).join('')+'</tr>').join('')+
+        '</tbody><tfoot><tr>'+tot.map((v,i)=>`<td>${fmt(v,i)}</td>`).join('')+'</tr></tfoot>';
+    }
+  }
+
+  render();
 });
 </script>
 </body>
 </html>
-
