@@ -1,5 +1,7 @@
 # Automatización de partes de trabajo (Formulario → SharePoint → Power Automate → Excel/Power Pivot)
 
+> 🚀 **Este proyecto, explicado y en formato interactivo, en el [portfolio de Jesús Alonso](https://jesusalonsomorales.github.io/#proyecto-partes).**
+
 Sistema para **digitalizar los partes de trabajo diarios** de una plantilla de
 campo y convertirlos, sin intervención manual, en dos cifras de gestión:
 
